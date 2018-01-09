@@ -1,0 +1,2712 @@
+---
+swagger: "2.0"
+info:
+  description: "Internal API for RelationDesk"
+  version: "1.0"
+  title: "RelationDesk API"
+  contact:
+    name: "Cristobal Wetzig"
+    email: "cristobal@relationdesk.com"
+host: "virtserver.swaggerhub.com"
+basePath: "/rdapi/relationdesk/1.0"
+tags:
+- name: "Channels"
+- name: "Channel"
+- name: "Thread"
+- name: "Item"
+  description: "Features shared by social media networks"
+- name: "Item rd_actions"
+  description: "RelationDesk Features"
+- name: "Facebook"
+  description: "Features only available on facebook"
+- name: "Twitter"
+  description: "Features only available on Twitter"
+- name: "Profile"
+- name: "Search"
+schemes:
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /channels:
+    get:
+      tags:
+      - "Channels"
+      summary: "Get a list of channels items. (belonging to the current authenticated\
+        \ user)"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Array of channel(s)"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/channel"
+  /channel/{network_type}/feed/{state}:
+    get:
+      tags:
+      - "Channel"
+      summary: "Get the channel feed"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "state"
+        in: "path"
+        description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+        required: true
+        type: "string"
+        default: "STATE_NOT_DONE"
+        enum:
+        - "STATE_DONE"
+        - "STATE_NOT_DONE"
+        - "STATE_PENDING"
+      - name: "network_type"
+        in: "path"
+        description: "Note that the option \"all\" can be used to get \"unified inbox\""
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "query"
+        description: "Required if option twitter,facebook or instagram is chosen"
+        required: false
+        type: "integer"
+      - name: "filter"
+        in: "query"
+        description: "Apply a filter to the threads request"
+        required: false
+        type: "array"
+        items:
+          type: "string"
+          enum:
+          - "FILTER_POSTS_AUTHORED_BY_US"
+          - "FILTER_POSTS_AUTHORED_BY_OTHERS"
+          - "FILTER_ALL_PM"
+          - "FILTER_ADS"
+          - "FILTER_TYPE_MENTIONS"
+          - "FILTER_RATING"
+        collectionFormat: "multi"
+      - name: "sort"
+        in: "query"
+        description: "Apply a sorting order to the threads request DEFINE NAMES"
+        required: false
+        type: "string"
+        enum:
+        - "SORT_OLDEST_FIRST"
+        - "SORT_NEWEST_FIRST"
+        - "SORT_OLDEST_FIRST_ENGAGEMENT"
+        - "SORT_NEWEST_FIRST_ENGAGEMENT"
+      - name: "exclude_items"
+        in: "query"
+        description: "A list of list items_id:s to exclude from response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      - name: "max_threads"
+        in: "query"
+        description: "Number of threads to return defaults to 5."
+        required: false
+        type: "integer"
+        default: 5
+        maximum: 10
+        minimum: 1
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Get the channel model"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /channel/{network_type}/team/{state}:
+    get:
+      tags:
+      - "Channel"
+      summary: "Get the channel team"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "state"
+        in: "path"
+        description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+        required: true
+        type: "string"
+        default: "STATE_NOT_DONE"
+        enum:
+        - "STATE_DONE"
+        - "STATE_NOT_DONE"
+        - "STATE_PENDING"
+      - name: "network_type"
+        in: "path"
+        description: "Note that the option \"all\" can be used to get \"unified inbox\""
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+        - "NETWORK_TYPE_ALL"
+      - name: "account_id"
+        in: "query"
+        description: "Required if option twitter,facebook or instagram is chosen"
+        required: false
+        type: "integer"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Get the channel team"
+          schema:
+            type: "object"
+            properties: {}
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /channel/{network_type}/state/{state}:
+    post:
+      tags:
+      - "Channel"
+      summary: "set all messages in channel as done"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "state"
+        in: "path"
+        description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+        required: true
+        type: "string"
+        default: "STATE_NOT_DONE"
+        enum:
+        - "STATE_DONE"
+        - "STATE_NOT_DONE"
+        - "STATE_PENDING"
+      - name: "network_type"
+        in: "path"
+        description: "Note that the option \"all\" can be used to get \"unified inbox\""
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+        - "NETWORK_TYPE_ALL"
+      - name: "account_id"
+        in: "query"
+        description: "Required if option twitter,facebook or instagram is chosen"
+        required: false
+        type: "integer"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /channel/{network_type}/assign:
+    post:
+      tags:
+      - "Channel"
+      summary: "Handover all messages to another user on channel"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "Note that the option \"all\" can be used to get \"unified inbox\""
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+        - "NETWORK_TYPE_ALL"
+      - name: "account_id"
+        in: "query"
+        description: "Required if option twitter,facebook or instagram is chosen"
+        required: false
+        type: "integer"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/thread/{thread_id}:
+    get:
+      tags:
+      - "Thread"
+      summary: "Get this thread"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "thread_id"
+        in: "path"
+        description: "the thread id"
+        required: true
+        type: "string"
+      - name: "max_children"
+        in: "query"
+        description: "Number of children to fetch for the thread. Defaults to three"
+        required: false
+        type: "integer"
+        default: 3
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Returns a thread a containing a parent (post) with max_children\
+            \ children (comments)."
+          schema:
+            $ref: "#/definitions/thread"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/thread/{thread_id}/children:
+    get:
+      tags:
+      - "Thread"
+      summary: "Get the children of this thread"
+      description: "Get the children of this thread"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "thread_id"
+        in: "path"
+        description: "the thread id"
+        required: true
+        type: "string"
+      - name: "max_children"
+        in: "query"
+        description: "Number of children to fetch for the thread. Defaults to three"
+        required: false
+        type: "integer"
+        default: 3
+      - name: "exclude_items"
+        in: "query"
+        description: "A list of list items_id:s to exclude from response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+  /{network_type}/{account_id}/thread/{thread_id}/state/{state}:
+    post:
+      tags:
+      - "Thread"
+      summary: "Set the state for the thread (and all children)"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "thread_id"
+        in: "path"
+        description: "the thread id"
+        required: true
+        type: "string"
+      - name: "state"
+        in: "path"
+        description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+        required: true
+        type: "string"
+        default: "STATE_NOT_DONE"
+        enum:
+        - "STATE_DONE"
+        - "STATE_NOT_DONE"
+        - "STATE_PENDING"
+      - name: "max_children"
+        in: "query"
+        description: "Number of children to fetch for the thread. Defaults to three"
+        required: false
+        type: "integer"
+        default: 3
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/profile/{profile_id}:
+    get:
+      tags:
+      - "Profile"
+      summary: "Get profile"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "profile_id"
+        in: "path"
+        required: true
+        type: "integer"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/profile"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/collision_detection:
+    get:
+      tags:
+      - "Item rd_actions"
+      parameters:
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Get the status of the lock."
+          schema:
+            $ref: "#/definitions/channel_notification"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Lock this item from other agents"
+      parameters:
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Lock this item"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/bug_report:
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Report an error for this item"
+      parameters:
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Define this call"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/info:
+    get:
+      tags:
+      - "Item rd_actions"
+      summary: "Get info about an item."
+      parameters:
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "Define this call"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/tag:
+    put:
+      tags:
+      - "Item rd_actions"
+      summary: "Tag this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_1"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Item rd_actions"
+      summary: "Delete a tag on this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_1"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/like:
+    post:
+      tags:
+      - "Item"
+      summary: "Like a network_item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Item"
+      summary: "Un-like a network_item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/message:
+    post:
+      tags:
+      - "Item"
+      summary: "Edit a message"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_2"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    put:
+      tags:
+      - "Item"
+      summary: "Reply to a network_item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_2"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/state/{state}:
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Change the state of this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - name: "state"
+        in: "path"
+        description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+        required: true
+        type: "string"
+        default: "STATE_NOT_DONE"
+        enum:
+        - "STATE_DONE"
+        - "STATE_NOT_DONE"
+        - "STATE_PENDING"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/assign/{uid}:
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Assign this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - name: "uid"
+        in: "path"
+        description: "Unique user id"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/note:
+    put:
+      tags:
+      - "Item rd_actions"
+      summary: "Create a note on this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_3"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/sentiment:
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Change the sentiment on this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_4"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/attachments:
+    get:
+      tags:
+      - "Item"
+      summary: "Get attachments for item."
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/item_attachment"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}/ask_for_help:
+    post:
+      tags:
+      - "Item rd_actions"
+      summary: "Request an ask for help for this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_5"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /{network_type}/{account_id}/item/{item_id}:
+    get:
+      tags:
+      - "Item"
+      summary: "get an item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "fetch a item. The item can be of item, item_instagram or item_twitter"
+          schema:
+            $ref: "#/definitions/item"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Item"
+      summary: "Delete an item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "network_type"
+        in: "path"
+        description: "The network type"
+        required: true
+        type: "string"
+        enum:
+        - "NETWORK_TYPE_FACEBOOK"
+        - "NETWORK_TYPE_TWITTER"
+        - "NETWORK_TYPE_INSTAGRAM"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /facebook/{account_id}/item/{item_id}/hide:
+    post:
+      tags:
+      - "Facebook"
+      summary: "Hide this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Facebook"
+      summary: "Unhide this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /facebook/{account_id}/item/{item_id}/private_reply:
+    put:
+      tags:
+      - "Facebook"
+      summary: "Reply to Post Comments and Visitor Posts with a private Message. Please\
+        \ note that a comment or post may only be replied to once."
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_2"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /facebook/{account_id}/item/{item_id}/reaction:
+    post:
+      tags:
+      - "Facebook"
+      summary: "React to this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_2"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Facebook"
+      summary: "Unreact on this item"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/body_2"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /twitter/{account_id}/item/{item_id}/retweet:
+    post:
+      tags:
+      - "Twitter"
+      summary: "retweet"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+    delete:
+      tags:
+      - "Twitter"
+      summary: "un-retweet"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "account_id"
+        in: "path"
+        description: "account_id"
+        required: true
+        type: "integer"
+      - name: "item_id"
+        in: "path"
+        description: "the item id"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+  /search:
+    get:
+      tags:
+      - "Search"
+      summary: "Search"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - name: "query"
+        in: "query"
+        description: "Keyword to search for in the search engine"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "dasdas"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/thread"
+  /publish/content:
+    put:
+      tags:
+      - "Publish"
+      summary: "Publish content to social networks"
+      parameters:
+      - name: "X-RD-TRACE"
+        in: "header"
+        description: "Unique hash generated to trace the call in the logs."
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/publish"
+      responses:
+        400:
+          description: "Response when an error has occured"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        200:
+          description: "OK"
+          headers:
+            X-RD-TRACE:
+              type: "string"
+              description: "Hash to trace the call"
+definitions:
+  channel:
+    type: "object"
+    required:
+    - "account_id"
+    - "name"
+    - "network_type"
+    properties:
+      uri:
+        type: "string"
+        format: "uri"
+        example: "http://facebook.com/484205448449849"
+      account_id:
+        $ref: "#/definitions/account_id"
+      name:
+        type: "string"
+        example: "Testfanpage"
+      network_type:
+        $ref: "#/definitions/network_type"
+      notifications:
+        type: "array"
+        items:
+          $ref: "#/definitions/channel_notification"
+    example:
+      account_id: "484205448449849"
+      name: "Testfanpage"
+      network_type: "facebook"
+      uri: "http://facebook.com/484205448449849"
+      notifications:
+      - count: 11
+        text: "private messages"
+      - count: 11
+        text: "private messages"
+  thread:
+    type: "object"
+    properties:
+      parent:
+        $ref: "#/definitions/item"
+      children:
+        type: "array"
+        items:
+          $ref: "#/definitions/child"
+    description: "The thread item is a parent (post) with its children (comments)"
+    example:
+      parent:
+        sentiment:
+          uid: "9999"
+          value: 0
+        notes:
+        - uid: "9999"
+          created: "2017-01-01 00:00:00"
+          text: "This is a great comment, we should make it a testimonial"
+        - uid: "9999"
+          created: "2017-01-01 00:00:00"
+          text: "This is a great comment, we should make it a testimonial"
+        attachments:
+        - description: "Check out this cool video!"
+          id: 3189371
+          type: "video"
+          uri: "https://domain.com/video.mp4"
+        - description: "Check out this cool video!"
+          id: 3189371
+          type: "video"
+          uri: "https://domain.com/video.mp4"
+        item_id: "1527362600610291_732132193120312"
+        author:
+          uid: "9999"
+          img: "https://domain.com/avatar.jpg"
+          name: "Love Karlsson"
+          handle: "thetiger"
+          klout: 84.394559032838998291481402702629566192626953125
+          id: 562686057
+          uri: "http://facebook.com/562686057"
+        created: "2017-01-01 00:00:00"
+        message: "Wow I'm so happy with the new product. I got one for every room\
+          \ in my house!"
+        thread_id: "128276120521127_1527362600610291"
+        collision_detection:
+          locked: "2017-01-01 00:00:00"
+          user:
+            uid: "9999"
+            img: "http://domain.com/avatar.jpg"
+            name: "Love Karlsson"
+        account_id: "484205448449849"
+        deleted:
+          date: "2017-01-01 00:00:00"
+          uid: "9999"
+        parent_id: "1527362600610291_73213232819732913"
+        assigned:
+          date: "2017-01-01 00:00:00"
+          uid: "9999"
+        state:
+          date: "2017-01-01 00:00:00"
+          uid: "9999"
+          state: "NOT_DONE"
+        network_type: "facebook"
+        updated: "2017-01-01 00:00:00"
+        object:
+          access: "PRIVATE"
+          name: "public wall post"
+          machinename: "mention"
+          state:
+          - "hidden"
+          - "hidden"
+      children:
+      - ""
+      - ""
+  child:
+    allOf:
+    - $ref: "#/definitions/item"
+    - type: "object"
+      properties:
+        children:
+          type: "array"
+          description: "Array of item"
+    description: "A item with its children comments"
+  item:
+    type: "object"
+    required:
+    - "account_id"
+    - "author"
+    - "created"
+    - "item_id"
+    - "message"
+    - "network_type"
+    - "parent_id"
+    - "state"
+    properties:
+      network_type:
+        $ref: "#/definitions/network_type"
+      account_id:
+        $ref: "#/definitions/account_id"
+      item_id:
+        $ref: "#/definitions/item_id"
+      thread_id:
+        $ref: "#/definitions/thread_id"
+      parent_id:
+        $ref: "#/definitions/parent_id"
+      state:
+        $ref: "#/definitions/item_state"
+      object:
+        $ref: "#/definitions/object"
+      author:
+        $ref: "#/definitions/profile"
+      notes:
+        type: "array"
+        description: "Array of notes. currently supports a single note."
+        items:
+          $ref: "#/definitions/note"
+      sentiment:
+        $ref: "#/definitions/sentiment"
+      message:
+        $ref: "#/definitions/item_message"
+      created:
+        $ref: "#/definitions/date"
+      deleted:
+        $ref: "#/definitions/deleted"
+      updated:
+        $ref: "#/definitions/date"
+      collision_detection:
+        $ref: "#/definitions/collision_detection"
+      assigned:
+        $ref: "#/definitions/assigned"
+      attachments:
+        type: "array"
+        items:
+          $ref: "#/definitions/item_attachment"
+    description: "Item model. represents a facebook posts, instagram media, tweet.\
+      \ But also comments."
+    example:
+      sentiment:
+        uid: "9999"
+        value: 0
+      notes:
+      - uid: "9999"
+        created: "2017-01-01 00:00:00"
+        text: "This is a great comment, we should make it a testimonial"
+      - uid: "9999"
+        created: "2017-01-01 00:00:00"
+        text: "This is a great comment, we should make it a testimonial"
+      attachments:
+      - description: "Check out this cool video!"
+        id: 3189371
+        type: "video"
+        uri: "https://domain.com/video.mp4"
+      - description: "Check out this cool video!"
+        id: 3189371
+        type: "video"
+        uri: "https://domain.com/video.mp4"
+      item_id: "1527362600610291_732132193120312"
+      author:
+        uid: "9999"
+        img: "https://domain.com/avatar.jpg"
+        name: "Love Karlsson"
+        handle: "thetiger"
+        klout: 84.394559032838998291481402702629566192626953125
+        id: 562686057
+        uri: "http://facebook.com/562686057"
+      created: "2017-01-01 00:00:00"
+      message: "Wow I'm so happy with the new product. I got one for every room in\
+        \ my house!"
+      thread_id: "128276120521127_1527362600610291"
+      collision_detection:
+        locked: "2017-01-01 00:00:00"
+        user:
+          uid: "9999"
+          img: "http://domain.com/avatar.jpg"
+          name: "Love Karlsson"
+      account_id: "484205448449849"
+      deleted:
+        date: "2017-01-01 00:00:00"
+        uid: "9999"
+      parent_id: "1527362600610291_73213232819732913"
+      assigned:
+        date: "2017-01-01 00:00:00"
+        uid: "9999"
+      state:
+        date: "2017-01-01 00:00:00"
+        uid: "9999"
+        state: "NOT_DONE"
+      network_type: "facebook"
+      updated: "2017-01-01 00:00:00"
+      object:
+        access: "PRIVATE"
+        name: "public wall post"
+        machinename: "mention"
+        state:
+        - "hidden"
+        - "hidden"
+  item_facebook:
+    type: "object"
+    properties:
+      rating:
+        $ref: "#/definitions/item_facebook_rating"
+      hidden:
+        $ref: "#/definitions/hidden"
+      mentioned_by:
+        type: "array"
+        description: "Mentioned by a profile id."
+        items:
+          $ref: "#/definitions/profile_id"
+    description: "Inherits all properties from item"
+  publish:
+    type: "object"
+    properties:
+      notes:
+        type: "array"
+        items:
+          $ref: "#/definitions/note"
+      publish_time:
+        $ref: "#/definitions/date"
+      tags:
+        type: "array"
+        items:
+          $ref: "#/definitions/tag"
+      message:
+        $ref: "#/definitions/item_message"
+      channels:
+        type: "array"
+        items:
+          $ref: "#/definitions/publish_channels"
+      attachments:
+        type: "array"
+        items:
+          $ref: "#/definitions/publish_attachments"
+    description: "Publish payload"
+  item_instagram:
+    type: "object"
+    description: "Inherits all properties from item"
+  item_twitter:
+    type: "object"
+    properties:
+      retweets:
+        type: "integer"
+        example: 5
+    description: "Inherits all properties from item"
+  profile:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      klout:
+        type: "number"
+        example: 84.394559032838998291481402702629566192626953125
+        description: "Only available for twitter"
+      img:
+        type: "string"
+        format: "uri"
+        example: "https://domain.com/avatar.jpg"
+      id:
+        type: "integer"
+        example: 562686057
+      name:
+        type: "string"
+        example: "Love Karlsson"
+      handle:
+        type: "string"
+        example: "thetiger"
+      uid:
+        $ref: "#/definitions/uid"
+      uri:
+        type: "string"
+        format: "uri"
+        example: "http://facebook.com/562686057"
+    example:
+      uid: "9999"
+      img: "https://domain.com/avatar.jpg"
+      name: "Love Karlsson"
+      handle: "thetiger"
+      klout: 84.394559032838998291481402702629566192626953125
+      id: 562686057
+      uri: "http://facebook.com/562686057"
+  object:
+    type: "object"
+    properties:
+      state:
+        type: "array"
+        description: "An array of strings describing the state of the object"
+        items:
+          type: "string"
+          example: "hidden"
+          enum:
+          - "HIDDEN"
+          - "DELETED"
+      access:
+        type: "string"
+        example: "PRIVATE"
+        description: "translates to object_type in DB  0 PUBLIC 1 PRIVATE"
+        enum:
+        - "ACCESS_PRIVATE"
+        - "ACCESS_PUBLIC"
+      machinename:
+        type: "string"
+        example: "mention"
+        description: "End user description of the type of object (All are not defined\
+          \ in the enum)"
+        enum:
+        - "MENTION"
+        - "DARKPOST"
+        - "RETWEET"
+        - "PHOTO"
+        - "RATING"
+      name:
+        type: "string"
+        example: "public wall post"
+        description: "Friendly name of category"
+    description: "Describes the object"
+    example:
+      access: "PRIVATE"
+      name: "public wall post"
+      machinename: "mention"
+      state:
+      - "hidden"
+      - "hidden"
+  item_attachment:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        example: 3189371
+        description: "Unique identifier of the attachment"
+      type:
+        type: "string"
+        example: "video"
+        enum:
+        - "TYPE_VIDEO"
+        - "TYPE_PHOTO"
+        - "TYPE_URI"
+        - "TYPE_FILE"
+      description:
+        type: "string"
+        example: "Check out this cool video!"
+      uri:
+        type: "string"
+        format: "uri"
+        example: "https://domain.com/video.mp4"
+    example:
+      description: "Check out this cool video!"
+      id: 3189371
+      type: "video"
+      uri: "https://domain.com/video.mp4"
+  member:
+    allOf:
+    - $ref: "#/definitions/user"
+    - properties:
+        assigned_count:
+          type: "integer"
+          example: 11
+          description: "Number of items assigned to the user"
+          minimum: 0
+          maximum: 99
+  sort_options:
+    type: "string"
+    enum:
+    - "SORT_OLDEST_FIRST"
+    - "SORT_NEWEST_FIRST"
+    - "SORT_OLDEST_FIRST_ENGAGEMENT"
+    - "SORT_NEWEST_FIRST_ENGAGEMENT"
+  filter_options:
+    type: "string"
+    example: "FILTER_POSTS_AUTHORED_BY_US"
+    enum:
+    - "FILTER_POSTS_AUTHORED_BY_US"
+    - "FILTER_POSTS_AUTHORED_BY_OTHERS"
+    - "FILTER_ALL_PM"
+    - "FILTER_ADS"
+    - "FILTER_TYPE_MENTIONS"
+    - "FILTER_RATING"
+  sort_state:
+    type: "object"
+    properties:
+      value:
+        type: "string"
+        example: "SORT_OLDEST_FIRST"
+      options:
+        type: "array"
+        example:
+        - name: "Creation time (newest first)"
+          value: "SORT_NEWEST_FIRST"
+        - name: "Creation time (oldest first)"
+          value: "SORT_OLDEST_FIRST"
+        - name: "Engagement (olderst first)"
+          value: "SORT_OLDEST_FIRST_ENGAGEMENT"
+        - name: "Engagement (Newest first)"
+          value: "SORT_NEWEST_FIRST_ENGAGEMENT"
+        items:
+          $ref: "#/definitions/sort_state_options"
+    description: "The sort state and sort options"
+    example:
+      options:
+      - name: "Creation time (newest first)"
+        value: "SORT_NEWEST_FIRST"
+      - name: "Creation time (oldest first)"
+        value: "SORT_OLDEST_FIRST"
+      - name: "Engagement (olderst first)"
+        value: "SORT_OLDEST_FIRST_ENGAGEMENT"
+      - name: "Engagement (Newest first)"
+        value: "SORT_NEWEST_FIRST_ENGAGEMENT"
+      value: "SORT_OLDEST_FIRST"
+  filter_state:
+    type: "object"
+    properties:
+      value:
+        type: "array"
+        items:
+          $ref: "#/definitions/filter_options"
+      options:
+        type: "array"
+        example:
+        - name: "Facebook post from us"
+          value: "FILTER_POSTS_AUTHORED_BY_US"
+        - name: "Authored by us"
+          value: "FILTER_POSTS_AUTHORED_BY_OTHERS"
+        - name: "Private messages"
+          value: "FILTER_ALL_PM"
+        - name: "Ads"
+          value: "FILTER_ADS"
+        - name: "Mentions"
+          value: "FILTER_TYPE_MENTIONS"
+        - name: "Ratings"
+          value: "FILTER_RATING"
+        items:
+          $ref: "#/definitions/filter_state_options"
+    description: "The filter options and state applied to the current feed"
+    example:
+      options:
+      - name: "Facebook post from us"
+        value: "FILTER_POSTS_AUTHORED_BY_US"
+      - name: "Authored by us"
+        value: "FILTER_POSTS_AUTHORED_BY_OTHERS"
+      - name: "Private messages"
+        value: "FILTER_ALL_PM"
+      - name: "Ads"
+        value: "FILTER_ADS"
+      - name: "Mentions"
+        value: "FILTER_TYPE_MENTIONS"
+      - name: "Ratings"
+        value: "FILTER_RATING"
+      value:
+      - "FILTER_POSTS_AUTHORED_BY_US"
+      - "FILTER_POSTS_AUTHORED_BY_US"
+  feed_state:
+    type: "object"
+    properties:
+      sort:
+        $ref: "#/definitions/sort_state"
+      filter:
+        $ref: "#/definitions/filter_state"
+    example:
+      filter:
+        options:
+        - name: "Facebook post from us"
+          value: "FILTER_POSTS_AUTHORED_BY_US"
+        - name: "Authored by us"
+          value: "FILTER_POSTS_AUTHORED_BY_OTHERS"
+        - name: "Private messages"
+          value: "FILTER_ALL_PM"
+        - name: "Ads"
+          value: "FILTER_ADS"
+        - name: "Mentions"
+          value: "FILTER_TYPE_MENTIONS"
+        - name: "Ratings"
+          value: "FILTER_RATING"
+        value:
+        - "FILTER_POSTS_AUTHORED_BY_US"
+        - "FILTER_POSTS_AUTHORED_BY_US"
+      sort:
+        options:
+        - name: "Creation time (newest first)"
+          value: "SORT_NEWEST_FIRST"
+        - name: "Creation time (oldest first)"
+          value: "SORT_OLDEST_FIRST"
+        - name: "Engagement (olderst first)"
+          value: "SORT_OLDEST_FIRST_ENGAGEMENT"
+        - name: "Engagement (Newest first)"
+          value: "SORT_NEWEST_FIRST_ENGAGEMENT"
+        value: "SORT_OLDEST_FIRST"
+  uid:
+    type: "integer"
+    description: "RelationDesk user Id"
+    example: "9999"
+  channel_notification:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "private messages"
+        description: "We need to define the names in the string. But something like\
+          \ this"
+        enum:
+        - "private messages"
+        - "public posts"
+        - "instagram comments"
+        - "tweets"
+        - "re-tweets"
+      count:
+        type: "integer"
+        example: 11
+    example:
+      count: 11
+      text: "private messages"
+  tag:
+    type: "string"
+    description: "a tag"
+    example: "customer support"
+  item_message:
+    type: "string"
+    description: "The network item message"
+    example: "Wow I'm so happy with the new product. I got one for every room in my\
+      \ house!"
+  account_id:
+    type: "integer"
+    description: "identifier of the social network id like pageId"
+    example: "484205448449849"
+  network_type:
+    type: "string"
+    example: "facebook"
+    enum:
+    - "facebok"
+    - "twitter"
+    - "instagram"
+  item_id:
+    type: "string"
+    description: "Unique identifier for the item"
+    example: "1527362600610291_732132193120312"
+  thread_id:
+    type: "string"
+    description: "Unique identifier of a parent item."
+    example: "128276120521127_1527362600610291"
+  parent_id:
+    type: "string"
+    description: "Unique identifier of parent_id"
+    example: "1527362600610291_73213232819732913"
+  item_state:
+    type: "object"
+    properties:
+      state:
+        type: "string"
+        example: "NOT_DONE"
+        enum:
+        - "DONE"
+        - "NOT_DONE"
+      uid:
+        $ref: "#/definitions/uid"
+      date:
+        $ref: "#/definitions/date"
+    description: "State \"DONE\", \"NOT_DONE\""
+    example:
+      date: "2017-01-01 00:00:00"
+      uid: "9999"
+      state: "NOT_DONE"
+  date:
+    type: "string"
+    format: "date"
+    description: "GMT Date"
+    example: "2017-01-01 00:00:00"
+  note:
+    type: "object"
+    properties:
+      created:
+        $ref: "#/definitions/date"
+      text:
+        type: "string"
+        example: "This is a great comment, we should make it a testimonial"
+      uid:
+        $ref: "#/definitions/uid"
+    example:
+      uid: "9999"
+      created: "2017-01-01 00:00:00"
+      text: "This is a great comment, we should make it a testimonial"
+  sentiment:
+    type: "object"
+    properties:
+      value:
+        type: "integer"
+        minimum: 0
+        maximum: 3
+      uid:
+        $ref: "#/definitions/uid"
+    description: "Sentiment set by the user. 0 = undecided(default), 1 = thumbs-up,\
+      \ 2 = neutral, 3 = thumbs-down."
+    example:
+      uid: "9999"
+      value: 0
+  deleted:
+    type: "object"
+    properties:
+      uid:
+        $ref: "#/definitions/uid"
+      date:
+        $ref: "#/definitions/date"
+    example:
+      date: "2017-01-01 00:00:00"
+      uid: "9999"
+  collision_detection:
+    type: "object"
+    properties:
+      user:
+        $ref: "#/definitions/user"
+      locked:
+        $ref: "#/definitions/date"
+    description: "Warns the agent if the item is being used by another agent"
+    example:
+      locked: "2017-01-01 00:00:00"
+      user:
+        uid: "9999"
+        img: "http://domain.com/avatar.jpg"
+        name: "Love Karlsson"
+  user:
+    type: "object"
+    required:
+    - "img"
+    - "name"
+    - "uid"
+    properties:
+      name:
+        type: "string"
+        example: "Love Karlsson"
+      img:
+        type: "string"
+        format: "uri"
+        example: "http://domain.com/avatar.jpg"
+      uid:
+        $ref: "#/definitions/uid"
+    example:
+      uid: "9999"
+      img: "http://domain.com/avatar.jpg"
+      name: "Love Karlsson"
+  assigned:
+    type: "object"
+    properties:
+      date:
+        $ref: "#/definitions/date"
+      uid:
+        $ref: "#/definitions/uid"
+    example:
+      date: "2017-01-01 00:00:00"
+      uid: "9999"
+  hidden:
+    type: "object"
+    properties:
+      uid:
+        $ref: "#/definitions/uid"
+      date:
+        $ref: "#/definitions/date"
+    description: "Hidden"
+  profile_id:
+    type: "integer"
+    description: "social network profile id"
+    example: "562686057"
+  uri:
+    type: "string"
+    format: "uri"
+    example: "http://www.domain.com"
+  inline_response_400:
+    properties:
+      code:
+        type: "string"
+        example: "FB_POST_NOT_FOUND"
+        description: "Error message for developer."
+      message:
+        type: "string"
+        example: "Failed to connect to facebook"
+        description: "friendly error message to show the end-user"
+      severity:
+        type: "string"
+        example: "critical"
+        description: "the error severity of the error. corresponds to the error message\
+          \ we show the user."
+        enum:
+        - "SEVERITY_CRITICAL"
+        - "SEVERITY_ERROR"
+        - "SEVERITY_NOTICE"
+        - "SEVERITY_INFO"
+        - "SEVERITY_DEBUG"
+      trace:
+        type: "string"
+        example: "1234567abcdefg"
+        description: "Trace hash to find error in logs"
+  inline_response_200:
+    properties:
+      feed:
+        $ref: "#/definitions/feed_state"
+      threads:
+        type: "array"
+        items:
+          $ref: "#/definitions/thread"
+    example:
+      feed:
+        filter:
+          options:
+          - name: "Facebook post from us"
+            value: "FILTER_POSTS_AUTHORED_BY_US"
+          - name: "Authored by us"
+            value: "FILTER_POSTS_AUTHORED_BY_OTHERS"
+          - name: "Private messages"
+            value: "FILTER_ALL_PM"
+          - name: "Ads"
+            value: "FILTER_ADS"
+          - name: "Mentions"
+            value: "FILTER_TYPE_MENTIONS"
+          - name: "Ratings"
+            value: "FILTER_RATING"
+          value:
+          - "FILTER_POSTS_AUTHORED_BY_US"
+          - "FILTER_POSTS_AUTHORED_BY_US"
+        sort:
+          options:
+          - name: "Creation time (newest first)"
+            value: "SORT_NEWEST_FIRST"
+          - name: "Creation time (oldest first)"
+            value: "SORT_OLDEST_FIRST"
+          - name: "Engagement (olderst first)"
+            value: "SORT_OLDEST_FIRST_ENGAGEMENT"
+          - name: "Engagement (Newest first)"
+            value: "SORT_NEWEST_FIRST_ENGAGEMENT"
+          value: "SORT_OLDEST_FIRST"
+      threads:
+      - parent:
+          sentiment:
+            uid: "9999"
+            value: 0
+          notes:
+          - uid: "9999"
+            created: "2017-01-01 00:00:00"
+            text: "This is a great comment, we should make it a testimonial"
+          - uid: "9999"
+            created: "2017-01-01 00:00:00"
+            text: "This is a great comment, we should make it a testimonial"
+          attachments:
+          - description: "Check out this cool video!"
+            id: 3189371
+            type: "video"
+            uri: "https://domain.com/video.mp4"
+          - description: "Check out this cool video!"
+            id: 3189371
+            type: "video"
+            uri: "https://domain.com/video.mp4"
+          item_id: "1527362600610291_732132193120312"
+          author:
+            uid: "9999"
+            img: "https://domain.com/avatar.jpg"
+            name: "Love Karlsson"
+            handle: "thetiger"
+            klout: 84.394559032838998291481402702629566192626953125
+            id: 562686057
+            uri: "http://facebook.com/562686057"
+          created: "2017-01-01 00:00:00"
+          message: "Wow I'm so happy with the new product. I got one for every room\
+            \ in my house!"
+          thread_id: "128276120521127_1527362600610291"
+          collision_detection:
+            locked: "2017-01-01 00:00:00"
+            user:
+              uid: "9999"
+              img: "http://domain.com/avatar.jpg"
+              name: "Love Karlsson"
+          account_id: "484205448449849"
+          deleted:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+          parent_id: "1527362600610291_73213232819732913"
+          assigned:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+          state:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+            state: "NOT_DONE"
+          network_type: "facebook"
+          updated: "2017-01-01 00:00:00"
+          object:
+            access: "PRIVATE"
+            name: "public wall post"
+            machinename: "mention"
+            state:
+            - "hidden"
+            - "hidden"
+        children:
+        - ""
+        - ""
+      - parent:
+          sentiment:
+            uid: "9999"
+            value: 0
+          notes:
+          - uid: "9999"
+            created: "2017-01-01 00:00:00"
+            text: "This is a great comment, we should make it a testimonial"
+          - uid: "9999"
+            created: "2017-01-01 00:00:00"
+            text: "This is a great comment, we should make it a testimonial"
+          attachments:
+          - description: "Check out this cool video!"
+            id: 3189371
+            type: "video"
+            uri: "https://domain.com/video.mp4"
+          - description: "Check out this cool video!"
+            id: 3189371
+            type: "video"
+            uri: "https://domain.com/video.mp4"
+          item_id: "1527362600610291_732132193120312"
+          author:
+            uid: "9999"
+            img: "https://domain.com/avatar.jpg"
+            name: "Love Karlsson"
+            handle: "thetiger"
+            klout: 84.394559032838998291481402702629566192626953125
+            id: 562686057
+            uri: "http://facebook.com/562686057"
+          created: "2017-01-01 00:00:00"
+          message: "Wow I'm so happy with the new product. I got one for every room\
+            \ in my house!"
+          thread_id: "128276120521127_1527362600610291"
+          collision_detection:
+            locked: "2017-01-01 00:00:00"
+            user:
+              uid: "9999"
+              img: "http://domain.com/avatar.jpg"
+              name: "Love Karlsson"
+          account_id: "484205448449849"
+          deleted:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+          parent_id: "1527362600610291_73213232819732913"
+          assigned:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+          state:
+            date: "2017-01-01 00:00:00"
+            uid: "9999"
+            state: "NOT_DONE"
+          network_type: "facebook"
+          updated: "2017-01-01 00:00:00"
+          object:
+            access: "PRIVATE"
+            name: "public wall post"
+            machinename: "mention"
+            state:
+            - "hidden"
+            - "hidden"
+        children:
+        - ""
+        - ""
+  body:
+    type: "object"
+    properties:
+      from:
+        $ref: "#/definitions/uid"
+      to:
+        $ref: "#/definitions/uid"
+  body_1:
+    type: "object"
+    properties:
+      text:
+        $ref: "#/definitions/tag"
+  body_2:
+    type: "object"
+    properties:
+      text:
+        $ref: "#/definitions/item_message"
+  body_3:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "Customer has called before about this subject."
+  body_4:
+    type: "object"
+    properties:
+      sentiment:
+        type: "integer"
+        example: 1
+        minimum: 1
+        maximum: 3
+  body_5:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "I dont know how to reply to this customer. Can you help me out"
+      email:
+        type: "string"
+        format: "email"
+        example: "dev@relationdesk.com"
+  item_facebook_rating:
+    properties:
+      previous:
+        type: "integer"
+        example: 3
+        minimum: 1
+        maximum: 5
+      current:
+        type: "integer"
+        example: 4
+        minimum: 1
+        maximum: 5
+  publish_channels:
+    properties:
+      account_id:
+        $ref: "#/definitions/account_id"
+      network_type:
+        $ref: "#/definitions/network_type"
+  publish_link:
+    properties:
+      header:
+        type: "string"
+        example: "The greatest link of all time"
+      body:
+        type: "string"
+        example: "Welcome to the greatest link of all time. This is the best link\
+          \ there ever was"
+      uri:
+        $ref: "#/definitions/uri"
+  publish_file:
+    properties:
+      mime:
+        type: "string"
+        example: "video/mp4"
+      file:
+        type: "string"
+        format: "base64"
+  publish_attachments:
+    properties:
+      type:
+        type: "string"
+        example: "link"
+        enum:
+        - "video"
+        - "link"
+        - "file"
+        - "image"
+      link:
+        $ref: "#/definitions/publish_link"
+      file:
+        $ref: "#/definitions/publish_file"
+  sort_state_options:
+    properties:
+      name:
+        type: "string"
+        example: "Creation time (oldest first)"
+      value:
+        $ref: "#/definitions/sort_options"
+  filter_state_options:
+    properties:
+      name:
+        type: "string"
+        example: "Facebook post from us"
+      value:
+        $ref: "#/definitions/filter_options"
+parameters:
+  max_children:
+    name: "max_children"
+    in: "query"
+    description: "Number of children to fetch for the thread. Defaults to three"
+    required: false
+    type: "integer"
+    default: 3
+  uid_path:
+    name: "uid"
+    in: "path"
+    description: "Unique user id"
+    required: true
+    type: "integer"
+  rd_trace:
+    name: "X-RD-TRACE"
+    in: "header"
+    description: "Unique hash generated to trace the call in the logs."
+    required: true
+    type: "string"
+  exclude_items:
+    name: "exclude_items"
+    in: "query"
+    description: "A list of list items_id:s to exclude from response."
+    required: false
+    type: "array"
+    items:
+      type: "string"
+    collectionFormat: "multi"
+  max_threads:
+    name: "max_threads"
+    in: "query"
+    description: "Number of threads to return defaults to 5."
+    required: false
+    type: "integer"
+    default: 5
+    maximum: 10
+    minimum: 1
+  param_filter:
+    name: "filter"
+    in: "query"
+    description: "Apply a filter to the threads request"
+    required: false
+    type: "array"
+    items:
+      type: "string"
+      enum:
+      - "FILTER_POSTS_AUTHORED_BY_US"
+      - "FILTER_POSTS_AUTHORED_BY_OTHERS"
+      - "FILTER_ALL_PM"
+      - "FILTER_ADS"
+      - "FILTER_TYPE_MENTIONS"
+      - "FILTER_RATING"
+    collectionFormat: "multi"
+  sort:
+    name: "sort"
+    in: "query"
+    description: "Apply a sorting order to the threads request DEFINE NAMES"
+    required: false
+    type: "string"
+    enum:
+    - "SORT_OLDEST_FIRST"
+    - "SORT_NEWEST_FIRST"
+    - "SORT_OLDEST_FIRST_ENGAGEMENT"
+    - "SORT_NEWEST_FIRST_ENGAGEMENT"
+  state_path:
+    name: "state"
+    in: "path"
+    description: "\"STATE_DONE\",\"STATE_NOT_DONE\""
+    required: true
+    type: "string"
+    default: "STATE_NOT_DONE"
+    enum:
+    - "STATE_DONE"
+    - "STATE_NOT_DONE"
+    - "STATE_PENDING"
+  account_id_path:
+    name: "account_id"
+    in: "path"
+    description: "account_id"
+    required: true
+    type: "integer"
+  thread_id_path:
+    name: "thread_id"
+    in: "path"
+    description: "the thread id"
+    required: true
+    type: "string"
+  item_id_path:
+    name: "item_id"
+    in: "path"
+    description: "the item id"
+    required: true
+    type: "string"
+  child_id:
+    name: "child_id"
+    in: "query"
+    description: "required if this is a is a child item."
+    required: false
+    type: "string"
+  thread_id:
+    name: "child_id"
+    in: "query"
+    description: "required if this is a is a child item."
+    required: false
+    type: "string"
+  account_id:
+    name: "account_id"
+    in: "query"
+    description: "account_id"
+    required: true
+    type: "integer"
+  network_type:
+    name: "network_type"
+    in: "query"
+    description: "The network type"
+    required: true
+    type: "string"
+    enum:
+    - "NETWORK_TYPE_FACEBOOK"
+    - "NETWORK_TYPE_TWITTER"
+    - "NETWORK_TYPE_INSTAGRAM"
+  network_type_path:
+    name: "network_type"
+    in: "path"
+    description: "The network type"
+    required: true
+    type: "string"
+    enum:
+    - "NETWORK_TYPE_FACEBOOK"
+    - "NETWORK_TYPE_TWITTER"
+    - "NETWORK_TYPE_INSTAGRAM"
+  request_publish:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/publish"
+  request_handover:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body"
+  request_reply:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body_2"
+  request_tag:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body_1"
+  request_note:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body_3"
+  request_sentiment:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body_4"
+  request_ask_for_help:
+    in: "body"
+    name: "body"
+    required: true
+    schema:
+      $ref: "#/definitions/body_5"
+responses:
+  400:
+    description: "Response when an error has occured"
+    schema:
+      $ref: "#/definitions/inline_response_400"
+  200:
+    description: "OK"
+    headers:
+      X-RD-TRACE:
+        type: "string"
+        description: "Hash to trace the call"
