@@ -20,7 +20,7 @@ tags:
 - name: "Facebook"
   description: "Features only available on facebook"
 - name: "Twitter"
-  description: "Features only available on Twitter"
+  description: "Features only available on  Twitter"
 - name: "Profile"
 - name: "Search"
 schemes:
